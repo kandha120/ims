@@ -1,0 +1,8 @@
+﻿
+id productName wareho
+               use   
+-- ----------- ------
+ 2 Iphone      IAT...
+ 3 Iphone      Ele...
+
+

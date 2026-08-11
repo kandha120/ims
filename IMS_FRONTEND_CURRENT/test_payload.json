@@ -1,0 +1,22 @@
+{
+    "customerName": "Test Customer",
+    "date": "2026-01-21",
+    "reference": "TEST-001",
+    "orderTax": 0,
+    "discountTotal": 0,
+    "shipping": 0,
+    "status": "Pending",
+    "paid": 0,
+    "items": [
+        {
+            "productName": "Test Product",
+            "netUnitPrice": 100,
+            "cost": 50,
+            "stock": 10,
+            "quantity": 1,
+            "discount": 0,
+            "tax": 0,
+            "lineTotal": 100
+        }
+    ]
+}
