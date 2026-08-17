@@ -183,6 +183,14 @@ const Header = () => {
     document.body.classList.add("expand-menu");
   };
 
+  const currentUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("ims_user") || "null");
+    } catch (e) {
+      return null;
+    }
+  })();
+
   return (
     <>
       {/* Sidebar Overlay */}
@@ -375,6 +383,16 @@ const Header = () => {
 
           {/* Desktop Icons */}
           <ul className="hidden md:flex items-center gap-2 md:gap-4">
+            {currentUser && (currentUser.role === "admin" || currentUser.role === "superadmin") && (
+              <li className="nav-item-box">
+                <Link
+                  to="/admin/users"
+                  className="p-2 rounded-lg hover:bg-base-300 transition-colors"
+                >
+                  <i className="ti ti-users text-lg"></i>
+                </Link>
+              </li>
+            )}
             {/* Fullscreen */}
             <li className="nav-item-box">
               <button

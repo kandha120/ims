@@ -285,4 +285,6 @@ export const all_routes = {
   activities: "/activities",
   pricing: "/pricing",
   contact: "/contacts",
+  adminLogin: "/admin/login",
+  adminUsers: "/admin/users",
 };

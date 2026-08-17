@@ -1,6 +1,9 @@
 import { Route, Navigate } from "react-router-dom";
 import { lazy } from "react";
 import { all_routes } from "./all_routes";
+import AdminLogin from "../feature-module/admin/AdminLogin";
+import UsersAdmin from "../feature-module/admin/UsersAdmin";
+import RoleGuard from "../auth/RoleGuard";
 import { Units } from "../feature-module/inventory/units";
 import StoreList from "../feature-module/people/store-list";
 import Warehouse from "../feature-module/people/warehouse";
@@ -1301,6 +1304,17 @@ export const authRoutes = [
     route: Route,
   },
   {
+    id: 900,
+    path: routes.adminUsers,
+    name: "admin-users",
+    element: (
+      <RoleGuard allowedRoles={["admin", "superadmin"]}>
+        <UsersAdmin />
+      </RoleGuard>
+    ),
+    route: Route,
+  },
+  {
     id: 116,
     path: "*",
     name: "NotFound",
@@ -2496,6 +2510,13 @@ export const unAuthRoutes = [
     path: routes.successThree,
     name: "success-3",
     element: <SuccessThree />,
+    route: Route,
+  },
+  {
+    id: 100,
+    path: routes.adminLogin,
+    name: "admin-login",
+    element: <AdminLogin />,
     route: Route,
   },
 ];

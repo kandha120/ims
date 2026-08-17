@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -19,12 +20,15 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtFilter;
+    private final TenantFilter tenantFilter;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtFilter) {
+    public SecurityConfig(JwtAuthenticationFilter jwtFilter, TenantFilter tenantFilter) {
         this.jwtFilter = jwtFilter;
+        this.tenantFilter = tenantFilter;
     }
 
     @Bean
@@ -45,39 +49,35 @@ public class SecurityConfig {
                 }) // use CorsConfigurationSource bean
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // 🔓 Public endpoints
-                        .requestMatchers(
-                                "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
-                                "/auth/login", "/auth/register", "/auth/reset-password",
-                                "/api/auth/login", "/api/auth/register")
-                        .permitAll()
+                    // Public endpoints (login, register, swagger)
+                    .requestMatchers(
+                        "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
+                        "/auth/login", "/auth/register", "/auth/reset-password",
+                        "/api/auth/login", "/api/auth/register")
+                    .permitAll()
 
-                        // 🔓 Public inventory APIs for your React screen
-                        .requestMatchers(
-                                "/api/stock/**",
-                                "/api/warehouse/**",
-                                "/api/warehouses/**",
-                                "/api/suppliers/**",
-                            "/api/purchase-order/**",
-                                "/api/products/**",
-                                "/api/categories/**",
-                                "/api/sales/**",
-                                "/api/sales-return/**",
-                                "/api/purchases/**",
-                            "/api/reports/**",
-                                "/api/debit-note/**",
-                                "/api/customers/**",
-                                "/api/units/**",
-                                "/api/adjustment/**",
-                                "/api/transfer/**",
-                                "/api/credit-note/**",
-                                "/api/credit-note/**",
-                                "/api/purchase-returns/**",
-                                "/api/sales-order/**")
-                        .permitAll()
+                    // Role-based protection
+                    // Users management - admin & superadmin only
+                    .requestMatchers("/api/users/**").hasAnyAuthority("admin", "superadmin")
 
-                        // everything else needs JWT
-                        .anyRequest().authenticated())
+                    // Products, Purchase, Sales, Reports -> admin + manager
+                    .requestMatchers(
+                        "/api/products/**",
+                        "/api/purchase/**",
+                        "/api/purchases/**",
+                        "/api/purchase-order/**",
+                        "/api/sales/**",
+                        "/api/reports/**")
+                    .hasAnyAuthority("admin", "manager")
+
+                    // Staff limited: sales and stock read access
+                    .requestMatchers(
+                        "/api/sales/**",
+                        "/api/stock/**")
+                    .hasAnyAuthority("admin", "manager", "staff")
+
+                    // everything else needs JWT authenticated
+                    .anyRequest().authenticated())
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .formLogin(form -> form.disable())
                 .logout(logout -> logout
@@ -88,6 +88,8 @@ public class SecurityConfig {
                         })
                         .permitAll());
 
+        // TenantFilter should run early to set tenant context
+        http.addFilterBefore(tenantFilter, JwtAuthenticationFilter.class);
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

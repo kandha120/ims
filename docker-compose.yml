@@ -1,0 +1,37 @@
+version: '3.8'
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: kandha
+      MYSQL_DATABASE: imsjava
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  backend:
+    build:
+      context: ./IMS_BACKEND_CURRENT/imsbackend/mainjav
+      dockerfile: Dockerfile
+    ports:
+      - "8200:8200"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/imsjava?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: kandha
+      JWT_SECRET: mysupersecretPREMkeymysupersecretkey123456
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./IMS_FRONTEND_CURRENT
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    environment:
+      VITE_API_BASE: http://localhost:8200
+
+volumes:
+  db_data:
