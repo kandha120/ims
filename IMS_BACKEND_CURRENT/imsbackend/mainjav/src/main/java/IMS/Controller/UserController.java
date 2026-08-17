@@ -1,20 +1,53 @@
 package IMS.Controller;
-
-import IMS.DTO.UserResponseDTO;
-import IMS.Entity.User;
-import IMS.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import IMS.DTO.UserResponseDTO;
+import IMS.Entity.User;
+import IMS.Service.UserService;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
     @Autowired
     private UserService userService;
+
+    @PostMapping
+    public org.springframework.http.ResponseEntity<?> createUser(@RequestBody java.util.Map<String, String> payload) {
+        String username = payload.get("username") != null && !payload.get("username").isBlank() 
+                ? payload.get("username").trim() 
+                : (payload.get("email") != null ? payload.get("email").trim() : "");
+        String password = payload.get("password");
+        String role = payload.get("role");
+
+        if (username.isBlank() || password == null || password.isBlank()) {
+            return org.springframework.http.ResponseEntity.badRequest().body(java.util.Map.of("message", "Username and Password are required"));
+        }
+        if (role == null || role.isBlank()) {
+            role = "User";
+        }
+
+        if (userService.getUserByEmail(username).isPresent()) {
+            return org.springframework.http.ResponseEntity.badRequest().body(java.util.Map.of("message", "User with this username already exists"));
+        }
+
+        User user = new User();
+        user.setEmail(username);
+        user.setPassword(password);
+        user.setRole(role);
+        user.setWarehouse(null);
+
+        User saved = userService.registerUser(user);
+        return org.springframework.http.ResponseEntity.ok(saved);
+    }
 
     // ✅ Warehouse mapped user create
     @PostMapping("/register")

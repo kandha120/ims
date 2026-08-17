@@ -309,6 +309,7 @@ const Undermaintainence = lazy(() =>
   import("../feature-module/pages/undermaintainence")
 );
 const Users = lazy(() => import("../feature-module/usermanagement/users"));
+const UserCreation = lazy(() => import("../feature-module/usermanagement/userCreation"));
 const RolesPermissions = lazy(() =>
   import("../feature-module/usermanagement/rolespermissions")
 );
@@ -1217,6 +1218,13 @@ export const authRoutes = [
     path: routes.users,
     name: "users",
     element: <Users />,
+    route: Route,
+  },
+  {
+    id: 1041,
+    path: routes.userCreation,
+    name: "userCreation",
+    element: <UserCreation />,
     route: Route,
   },
   {

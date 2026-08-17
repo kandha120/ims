@@ -13,7 +13,6 @@ const AddSalesReturns = ({ customers: propCustomers = [], products: propProducts
     orderTax: 0,
     discount: 0,
     shipping: 0,
-    shipping: 0,
     status: "Pending",
     paymentStatus: "Paid",
   });

@@ -579,6 +579,16 @@ const Header = () => {
     data-bs-toggle="dropdown"
     aria-expanded="false"
   >
+    <img
+      src={avator1}
+      alt="Img"
+      className="rounded-circle me-1"
+      width="32"
+      height="32"
+    />
+    <span className="fs-13 fw-medium ms-1 me-1 text-dark">
+      {currentUser?.username || currentUser?.email || "User"}
+    </span>
   </a>
 
   <ul
@@ -594,8 +604,8 @@ const Header = () => {
         height="45"
       />
       <div>
-        <h6 className="mb-0 fw-semibold">Prem Kumar</h6>
-        <small className="text-muted">Admin</small>
+        <h6 className="mb-0 fw-semibold">{currentUser?.username || currentUser?.email || "User"}</h6>
+        <small className="badge bg-primary mt-1">{currentUser?.role || "User"}</small>
       </div>
     </li>
 
@@ -606,8 +616,8 @@ const Header = () => {
     </li>
 
     <li>
-      <Link className="dropdown-item d-flex align-items-center py-2" to={route.salesreport}>
-        <i className="ti ti-file-text me-2"></i> Reports
+      <Link className="dropdown-item d-flex align-items-center py-2" to="/user-creation">
+        <i className="ti ti-user-plus me-2"></i> User Creation
       </Link>
     </li>
 
@@ -623,6 +633,10 @@ const Header = () => {
       <Link
         className="dropdown-item d-flex align-items-center text-danger py-2"
         to={route.signin}
+        onClick={() => {
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("ims_user");
+        }}
       >
         <i className="ti ti-logout me-2"></i> Logout
       </Link>

@@ -56,10 +56,9 @@ public class AuthController {
                             request.getPassword()));
 
             String email = auth.getName();
-            String role = auth.getAuthorities().stream()
-                    .findFirst()
-                    .map(r -> r.getAuthority())
-                    .orElse("ROLE_USER");
+            var userOpt = repo.findByEmail(email);
+            String role = userOpt.isPresent() ? userOpt.get().getRole() : "User";
+            if (role == null || role.isBlank()) role = "User";
 
             String accessToken = jwtUtil.generateToken(email, role);
             String refreshToken = jwtUtil.generateRefreshToken(email, role);
@@ -68,7 +67,14 @@ public class AuthController {
             addCookie(response, "refreshToken", refreshToken, 60 * 60 * 24 * 7);
 
             return ResponseEntity.ok(Map.of(
-                    "message", "Login successful"));
+                    "message", "Login successful",
+                    "accessToken", accessToken,
+                    "token", accessToken,
+                    "refreshToken", refreshToken,
+                    "email", email,
+                    "username", email,
+                    "role", role
+            ));
         } catch (org.springframework.security.core.AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("message", "Invalid email or password"));

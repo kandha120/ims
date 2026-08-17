@@ -52,29 +52,28 @@ public class SecurityConfig {
                     // Public endpoints (login, register, swagger)
                     .requestMatchers(
                         "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
-                        "/auth/login", "/auth/register", "/auth/reset-password",
+                        "/auth/login", "/auth/register", "/auth/reset-password", "/auth/me", "/auth/logout",
                         "/api/auth/login", "/api/auth/register")
                     .permitAll()
 
                     // Role-based protection
                     // Users management - admin & superadmin only
-                    .requestMatchers("/api/users/**").hasAnyAuthority("admin", "superadmin")
+                    .requestMatchers("/api/users/**").hasAnyAuthority("admin", "superadmin", "Admin", "Superadmin", "ROLE_ADMIN", "ROLE_SUPERADMIN")
 
-                    // Products, Purchase, Sales, Reports -> admin + manager
+                    // Products, Purchase, Sales, Reports, Stock, etc. -> admin + user + manager
                     .requestMatchers(
                         "/api/products/**",
                         "/api/purchase/**",
                         "/api/purchases/**",
                         "/api/purchase-order/**",
                         "/api/sales/**",
-                        "/api/reports/**")
-                    .hasAnyAuthority("admin", "manager")
-
-                    // Staff limited: sales and stock read access
-                    .requestMatchers(
-                        "/api/sales/**",
-                        "/api/stock/**")
-                    .hasAnyAuthority("admin", "manager", "staff")
+                        "/api/reports/**",
+                        "/api/stock/**",
+                        "/api/categories/**",
+                        "/api/suppliers/**",
+                        "/api/customers/**",
+                        "/api/warehouses/**")
+                    .hasAnyAuthority("admin", "superadmin", "manager", "user", "staff", "Admin", "Superadmin", "Manager", "User", "Staff", "ROLE_ADMIN", "ROLE_USER", "ROLE_MANAGER", "ROLE_STAFF")
 
                     // everything else needs JWT authenticated
                     .anyRequest().authenticated())
@@ -89,8 +88,8 @@ public class SecurityConfig {
                         .permitAll());
 
         // TenantFilter should run early to set tenant context
-        http.addFilterBefore(tenantFilter, JwtAuthenticationFilter.class);
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(tenantFilter, JwtAuthenticationFilter.class);
         return http.build();
     }
 
@@ -98,7 +97,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         // React dev server
-        config.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:5174", "http://localhost:5175",
+        config.setAllowedOrigins(List.of("http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5174", "http://localhost:5175",
                 "http://localhost:5176"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));

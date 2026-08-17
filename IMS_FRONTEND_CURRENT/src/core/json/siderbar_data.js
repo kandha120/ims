@@ -86,6 +86,16 @@ export const SidebarData = [
       { label: "Warehouses", link: "/warehouse", icon: "archive", submenu: false },
     ],
   },
+  {
+    label: "User Creation",
+    submenuOpen: true,
+    showSubRoute: false,
+    submenuHdr: "User Creation",
+    submenuItems: [
+      { label: "User Creation", link: "/user-creation", icon: "user-plus", submenu: false },
+      { label: "User List", link: "/users", icon: "users", submenu: false },
+    ],
+  },
   // {
   //   label: "HRM",
   //   submenuOpen: true,

@@ -48,10 +48,10 @@ const Chat = () => {
   const [input, setInput] = useState("");
   const [step, setStep] = useState(0);
   const [mode, setMode] = useState(null); // null | 'customer' | 'supplier' | 'warehouse' | 'product' | 'category'
-  const [formData, setFormData] = useState({});
+  const [formdata, setFormData] = useState({});
   const messagesEndRef = useRef(null);
 
-  console.log("AI provider:", formData);
+console.log("AI provider:",formdata); 
 
   // Settings modal and AI provider inputs
   const [keyModalOpen, setKeyModalOpen] = useState(false);
@@ -68,7 +68,9 @@ const Chat = () => {
     if (localGem) return "gemini";
     return "openai";
   });
-  const [isCallingAI, setIsCallingAI] = useState(false);
+
+  
+const [isCallingAI, setIsCallingAI] = useState(false);
   const [autoFallbackAI, setAutoFallbackAI] = useState(true);
 
   // -------------------- API Endpoints for ERP --------------------

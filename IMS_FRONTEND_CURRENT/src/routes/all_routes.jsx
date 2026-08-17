@@ -190,6 +190,7 @@ export const all_routes = {
   comingsoon: "/coming-soon",
   undermaintenance: "/under-maintenance",
   users: "/users",
+  userCreation: "/user-creation",
   rolespermission: "/roles-permissions",
   permissions: "/permissions",
   deleteaccount: "/delete-account",

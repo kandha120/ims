@@ -1,3 +1,3 @@
-const baseapi = "http://127.0.0.1:8200";
+const baseapi = "http://localhost:8200";
 
 export default baseapi;

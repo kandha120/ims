@@ -1,110 +1,120 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import AddUsers from "../../core/modals/usermanagement/addusers";
 import EditUser from "../../core/modals/usermanagement/edituser";
-
 import TooltipIcons from "../../components/tooltip-content/tooltipIcons";
 import RefreshIcon from "../../components/tooltip-content/refresh";
 import CollapesIcon from "../../components/tooltip-content/collapes";
 import Table from "../../core/pagination/datatable";
-import { userlisadata } from "../../core/json/users";
+import baseapi from "../../env/baseapi";
+import { toast } from "react-toastify";
 
 const Users = () => {
-  const dataSource = userlisadata;
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${baseapi}/api/users`);
+      if (res.ok) {
+        const data = await res.json();
+        const formatted = (Array.isArray(data) ? data : []).map((u) => ({
+          key: u.id,
+          id: u.id,
+          username: u.email,
+          email: u.email,
+          role: u.role || "User",
+          status: "Active",
+        }));
+        setUsers(formatted);
+      }
+    } catch (e) {
+      console.error("Failed to fetch users", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
+    try {
+      const res = await fetch(`${baseapi}/api/users/${id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        toast.success("User deleted successfully.");
+        fetchUsers();
+      } else {
+        toast.error("Failed to delete user.");
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Error deleting user.");
+    }
+  };
 
   const columns = [
-  {
-    title: "User Name",
-    dataIndex: "username",
-    render: (text, record) =>
-    <span className="userimgname">
-          <Link to="#" className="avatar avatar-md me-2">
-            <img alt="" src={record.img} />
-          </Link>
-          <div>
-            <Link to="#">{text}</Link>
-          </div>
-        </span>,
-
-    sorter: (a, b) => a.username.length - b.username.length
-  },
-
-  {
-    title: "Phone",
-    dataIndex: "phone",
-    sorter: (a, b) => a.phone.length - b.phone.length
-  },
-  {
-    title: "Email",
-    dataIndex: "email",
-    sorter: (a, b) => a.email.length - b.email.length
-  },
-  {
-    title: "Role",
-    dataIndex: "role",
-    sorter: (a, b) => a.role.length - b.role.length
-  },
-  {
-    title: "Created On",
-    dataIndex: "createdon",
-    sorter: (a, b) => a.createdon.length - b.createdon.length
-  },
-  {
-    title: "Status",
-    dataIndex: "status",
-    render: (text) =>
-    <div>
-          {text === "Active" &&
-      <span className="d-inline-flex align-items-center p-1 pe-2 rounded-1 text-white bg-success fs-10">
-              {" "}
-              <i className="ti ti-point-filled me-1 fs-11"></i>
-              {text}
-            </span>
-      }
-          {text === "Inactive" &&
-      <span className="d-inline-flex align-items-center p-1 pe-2 rounded-1 text-white bg-danger fs-10">
-              {" "}
-              <i className="ti ti-point-filled me-1 fs-11"></i>
-              {text}
-            </span>
-      }
-        </div>,
-
-    sorter: (a, b) => a.status.length - b.status.length
-  },
-  {
-    title: "Actions",
-    dataIndex: "actions",
-    key: "actions",
-    render: () =>
-    <div className="action-table-data">
+    {
+      title: "ID",
+      dataIndex: "id",
+      sorter: (a, b) => a.id - b.id,
+    },
+    {
+      title: "Username / Email",
+      dataIndex: "username",
+      render: (text) => <span className="fw-semibold">{text}</span>,
+      sorter: (a, b) => (a.username || "").localeCompare(b.username || ""),
+    },
+    {
+      title: "Role",
+      dataIndex: "role",
+      render: (text) => (
+        <span
+          className={`badge ${
+            text === "Admin" || text === "admin" || text === "ROLE_ADMIN"
+              ? "bg-danger"
+              : "bg-info"
+          }`}
+        >
+          {text || "User"}
+        </span>
+      ),
+      sorter: (a, b) => (a.role || "").localeCompare(b.role || ""),
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      render: (text) => (
+        <span className="d-inline-flex align-items-center p-1 pe-2 rounded-1 text-white bg-success fs-10">
+          <i className="ti ti-point-filled me-1 fs-11"></i>
+          {text}
+        </span>
+      ),
+    },
+    {
+      title: "Actions",
+      dataIndex: "actions",
+      key: "actions",
+      render: (_, record) => (
+        <div className="action-table-data">
           <div className="edit-delete-action">
-            <Link className="me-2 p-2" to="#">
-              <i
-            data-feather="eye"
-            className="feather feather-eye action-eye">
-          </i>
-            </Link>
-            <Link
-          className="me-2 p-2"
-          to="#"
-          data-bs-toggle="modal"
-          data-bs-target="#edit-units">
-          
-              <i data-feather="edit" className="feather-edit"></i>
-            </Link>
-            <Link className="confirm-text p-2" to="#">
-              <i
-            data-feather="trash-2"
-            className="feather-trash-2"
-            data-bs-toggle="modal"
-            data-bs-target="#delete-modal">
-          </i>
-            </Link>
+            <button
+              className="btn btn-sm text-danger"
+              onClick={() => handleDelete(record.id)}
+              title="Delete User"
+            >
+              <i data-feather="trash-2" className="feather-trash-2" />
+            </button>
           </div>
         </div>
-
-  }];
-
+      ),
+    },
+  ];
 
   return (
     <div>
@@ -119,95 +129,48 @@ const Users = () => {
             </div>
             <ul className="table-top-head">
               <TooltipIcons />
-              <RefreshIcon />
+              <li onClick={fetchUsers} style={{ cursor: "pointer" }}>
+                <RefreshIcon />
+              </li>
               <CollapesIcon />
             </ul>
-            <div className="page-btn">
+            <div className="page-btn d-flex gap-2">
+              <Link to="/user-creation" className="btn btn-secondary">
+                <i className="ti ti-user-plus me-1"></i>
+                User Creation Form
+              </Link>
               <Link
                 to="#"
                 className="btn btn-added"
                 data-bs-toggle="modal"
-                data-bs-target="#add-units">
-                
+                data-bs-target="#add-units"
+              >
                 <i className="ti ti-circle-plus me-1"></i>
                 Add New User
               </Link>
             </div>
           </div>
-          {/* /product list */}
+
           <div className="card table-list-card">
-            <div className="card-header d-flex align-items-center justify-content-between flex-wrap row-gap-3">
-              <div className="search-set"></div>
-              <div className="d-flex table-dropdown my-xl-auto right-content align-items-center flex-wrap row-gap-3">
-                <div className="dropdown me-2">
-                  <Link
-                    to="#"
-                    className="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center"
-                    data-bs-toggle="dropdown">
-                    
-                    Status
-                  </Link>
-                  <ul className="dropdown-menu  dropdown-menu-end p-3">
-                    <li>
-                      <Link to="#" className="dropdown-item rounded-1">
-                        Active
-                      </Link>
-                    </li>
-                    <li>
-                      <Link to="#" className="dropdown-item rounded-1">
-                        Inactive
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
             <div className="card-body">
-              <div className="table-responsive">
-                <Table columns={columns} dataSource={dataSource} />
-              </div>
-            </div>
-          </div>
-          {/* /product list */}
-        </div>
-      </div>
-      <AddUsers />
-      <EditUser />
-      <div className="modal fade" id="delete-modal">
-        <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content">
-            <div className="page-wrapper-new p-0">
-              <div className="content p-5 px-3 text-center">
-                <span className="rounded-circle d-inline-flex p-2 bg-danger-transparent mb-2">
-                  <i className="ti ti-trash fs-24 text-danger" />
-                </span>
-                <h4 className="fs-20 fw-bold mb-2 mt-1">Delete User</h4>
-                <p className="mb-0 fs-16">
-                  Are you sure you want to delete user?
-                </p>
-                <div className="modal-footer-btn mt-3 d-flex justify-content-center">
-                  <button
-                    type="button"
-                    className="btn me-2 btn-secondary fs-13 fw-medium p-2 px-3 shadow-none"
-                    data-bs-dismiss="modal">
-                    
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="btn btn-primary fs-13 fw-medium p-2 px-3">
-                    
-                    Yes Delete
-                  </button>
+              {loading ? (
+                <div className="text-center py-4">
+                  <div className="spinner-border text-primary" role="status" />
+                  <p className="mt-2 text-muted">Loading users...</p>
                 </div>
-              </div>
+              ) : (
+                <div className="table-responsive">
+                  <Table columns={columns} dataSource={users} />
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
-    </div>);
-
+      <AddUsers onUserAdded={fetchUsers} />
+      <EditUser />
+    </div>
+  );
 };
 
 export default Users;

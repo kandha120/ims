@@ -21,20 +21,37 @@ import "../src/assets/icons/boxicons/css/boxicons.min.css";
 import "../node_modules/@fortawesome/fontawesome-free/css/fontawesome.min.css";
 import "../node_modules/@fortawesome/fontawesome-free/css/all.min.css";
 
-// Global Fetch Interceptor to handle Session Timeout (401/403)
+// Global Fetch Interceptor to handle JWT Authorization & Session Timeout
 const { fetch: originalFetch } = window;
-window.fetch = async (...args) => {
+window.fetch = async (resource, options = {}) => {
+  const token = localStorage.getItem("accessToken");
+  
+  // Clone or initialize headers
+  let headers = new Headers(options.headers || {});
+  if (token && !headers.has("Authorization")) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+  
+  const updatedOptions = {
+    ...options,
+    headers: headers,
+    credentials: options.credentials || "include",
+  };
+
   try {
-    const response = await originalFetch(...args);
-    if (response.status === 401 || response.status === 403) {
-      // If we are not already on the signin page, redirect
-      if (!window.location.pathname.includes('/signin') && !window.location.pathname.includes('/auth/login')) {
-        // sessionStorage.clear(); // Optional: clear tokens if stored
-        // localStorage.clear();
-        window.location.href = '/signin';
-        return response; // Return usage to avoid crash in caller, though page will reload
-      }
+    const response = await originalFetch(resource, updatedOptions);
+    
+    // Convert resource to string for checking URL path
+    const urlStr = typeof resource === "string" ? resource : (resource?.url || "");
+    const isAuthEndpoint = urlStr.includes("/auth/login") || urlStr.includes("/auth/register");
+    const isSigninPage = window.location.pathname.includes("/signin") || window.location.pathname.includes("/admin/login");
+
+    if ((response.status === 401 || response.status === 403) && !isAuthEndpoint && !isSigninPage) {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("ims_user");
+      window.location.href = "/signin";
     }
+    
     return response;
   } catch (error) {
     throw error;
