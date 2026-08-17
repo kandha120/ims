@@ -5,7 +5,7 @@ const UsersAdmin = () => {
   const [form, setForm] = useState({ username: "", email: "", role: "user", password: "" });
 
   useEffect(() => {
-    fetch("http://localhost:8200/api/users", { credentials: "include" })
+    fetch("/api/users", { credentials: "include" })
       .then((res) => res.json())
       .then((data) => setUsers(data))
       .catch(() => setUsers([]));
@@ -20,7 +20,7 @@ const UsersAdmin = () => {
       role: form.role,
     };
 
-    fetch(`http://localhost:8200/api/users/register?warehouseId=1`, {
+    fetch(`/api/users/register?warehouseId=1`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -29,7 +29,7 @@ const UsersAdmin = () => {
       .then((res) => res.json())
       .then((newUser) => {
         // refetch list
-        return fetch("http://localhost:8200/api/users", { credentials: "include" });
+        return fetch("/api/users", { credentials: "include" });
       })
       .then((res) => res.json())
       .then((list) => {
@@ -40,7 +40,7 @@ const UsersAdmin = () => {
   };
 
   const removeUser = (id) => {
-    fetch(`http://localhost:8200/api/users/${id}`, { method: "DELETE", credentials: "include" })
+    fetch(`/api/users/${id}`, { method: "DELETE", credentials: "include" })
       .then((res) => {
         if (!res.ok) throw new Error("Delete failed");
         setUsers((prev) => prev.filter((u) => u.id !== id));
