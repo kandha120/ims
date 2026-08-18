@@ -60,7 +60,7 @@ public class SecurityConfig {
                     // Users management - admin & superadmin only
                     .requestMatchers("/api/users/**").hasAnyAuthority("admin", "superadmin", "Admin", "Superadmin", "ROLE_ADMIN", "ROLE_SUPERADMIN")
 
-                    // Products, Purchase, Sales, Reports, Stock, etc. -> admin + user + manager
+                    // Products, Purchase, Sales, Reports, Stock, Email, etc. -> admin + user + manager
                     .requestMatchers(
                         "/api/products/**",
                         "/api/purchase/**",
@@ -72,7 +72,8 @@ public class SecurityConfig {
                         "/api/categories/**",
                         "/api/suppliers/**",
                         "/api/customers/**",
-                        "/api/warehouses/**")
+                        "/api/warehouses/**",
+                        "/api/email/**")
                     .hasAnyAuthority("admin", "superadmin", "manager", "user", "staff", "Admin", "Superadmin", "Manager", "User", "Staff", "ROLE_ADMIN", "ROLE_USER", "ROLE_MANAGER", "ROLE_STAFF")
 
                     // everything else needs JWT authenticated
@@ -96,10 +97,9 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        // React dev server
-        config.setAllowedOrigins(List.of("http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5174", "http://localhost:5175",
-                "http://localhost:5176"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // Support all origin patterns for local and production server deployments
+        config.setAllowedOriginPatterns(List.of("*"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
 

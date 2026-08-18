@@ -2166,10 +2166,10 @@ export const SidebarData1 = [
     //   route: routes.users,
     subRoutes: [
     {
-      tittle: "Users",
+      tittle: "User Creation",
       hasSubRoute: false,
       showSubRoute: false,
-      route: "/users",
+      route: "/user-creation",
       subRoutes: []
     },
     {

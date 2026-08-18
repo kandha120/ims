@@ -20,7 +20,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class AuthController {
 
     private final AuthenticationManager authManager;
@@ -63,8 +62,8 @@ public class AuthController {
             String accessToken = jwtUtil.generateToken(email, role);
             String refreshToken = jwtUtil.generateRefreshToken(email, role);
 
-            addCookie(response, "accessToken", accessToken, 60 * 60);
-            addCookie(response, "refreshToken", refreshToken, 60 * 60 * 24 * 7);
+            addCookie(response, "accessToken", accessToken, 30 * 24 * 60 * 60);
+            addCookie(response, "refreshToken", refreshToken, 30 * 24 * 60 * 60);
 
             return ResponseEntity.ok(Map.of(
                     "message", "Login successful",

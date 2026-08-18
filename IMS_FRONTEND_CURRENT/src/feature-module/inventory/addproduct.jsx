@@ -133,12 +133,24 @@ const AddProduct = ({ editId = null, onClose = null, onSave = () => { } }) => {
   const [price, setPrice] = useState("");
   const [cost, setCost] = useState("");
   const [taxAmount, setTaxAmount] = useState("");
+  const [quantityAlert, setQuantityAlert] = useState("");
+  const [expiryPeriodMonths, setExpiryPeriodMonths] = useState("");
   const [preferenceSupply, setPreferenceSupply] = useState("");
   const [discountValue, setDiscountValue] = useState("");
   const [manufacturer, setManufacturer] = useState("");
   const [description, setDescription] = useState("");
   const [slugCounter, setSlugCounter] = useState(1);
   const [hasExpiry, setHasExpiry] = useState(false);
+
+  const calculateExpiryDate = (mfgDate, months) => {
+    if (!mfgDate || months === "" || months === null || isNaN(months) || parseInt(months, 10) <= 0) {
+      return null;
+    }
+    const d = new Date(mfgDate);
+    if (isNaN(d.getTime())) return null;
+    d.setMonth(d.getMonth() + parseInt(months, 10));
+    return d;
+  };
   const [variants, setVariants] = useState([
     { variation: "color", variantValue: "red", sku: 1234, quantity: 0, price: 50000 },
     { variation: "color", variantValue: "black", sku: 2345, quantity: 0, price: 50000 },
@@ -303,6 +315,8 @@ const AddProduct = ({ editId = null, onClose = null, onSave = () => { } }) => {
           setPrice(productData.price || "");
           setCost(productData.cost || "");
           setTaxAmount(productData.taxAmount || "");
+          setQuantityAlert(productData.quantityAlert != null ? productData.quantityAlert : "");
+          setExpiryPeriodMonths(productData.expiryPeriodMonths != null ? productData.expiryPeriodMonths : "");
           setManufacturer(productData.manufacturer || "");
           setPreferenceSupply(productData.preferenceSupply || "");
           setDescription(productData.description || "");
@@ -362,19 +376,19 @@ const AddProduct = ({ editId = null, onClose = null, onSave = () => { } }) => {
     if (!sku) { newErrors.sku = "SKU is required"; missing.push("SKU"); }
     if (!hsnSac) { newErrors.hsnSac = "HSN/SAC is required"; missing.push("HSN/SAC"); }
     if (isInvalidSelect(selectedCategory)) { newErrors.category = "Category is required"; missing.push("Category"); }
-    if (isInvalidSelect(selectedCategory)) { newErrors.category = "Category is required"; missing.push("Category"); }
-    // if (isInvalidSelect(selectedWarehouse)) { newErrors.warehouse = "Warehouse is required"; missing.push("Warehouse"); }
-    // if (!quantity) { newErrors.quantity = "Quantity is required"; missing.push("Quantity"); }
-    // if (!quantity) { newErrors.quantity = "Quantity is required"; missing.push("Quantity"); }
     if (!selectedUnit) { newErrors.units = "Units is required"; missing.push("Units"); }
     if (!price) { newErrors.price = "Price is required"; missing.push("Price"); }
     if (!cost) { newErrors.cost = "Cost is required"; missing.push("Cost"); }
     if (!taxAmount) { newErrors.taxAmount = "Tax Amount is required"; missing.push("Tax Amount"); }
-    // if (!quantityAlert) { newErrors.quantityAlert = "Quantity Alert is required"; missing.push("Quantity Alert"); }
-    // if (isInvalidSelect(selectedWarranty)) { newErrors.warranty = "Warranty is required"; missing.push("Warranty"); }
-    // if (!manufacturer) { newErrors.manufacturer = "Manufacturer is required"; missing.push("Manufacturer"); }
+    if (quantityAlert === "" || quantityAlert === null || isNaN(quantityAlert)) { newErrors.quantityAlert = "Low Stock Threshold is required"; missing.push("Low Stock Threshold"); }
 
-    if (hasExpiry && !date2) { newErrors.expiryDate = "Expiry Date is required"; missing.push("Expiry Date"); }
+    if (hasExpiry) {
+      if (!expiryPeriodMonths || parseInt(expiryPeriodMonths, 10) <= 0) {
+        newErrors.expiryPeriodMonths = "Expiry Period (in months) is required";
+        missing.push("Expiry Period (in months)");
+      }
+      if (!date2) { newErrors.expiryDate = "Expiry Date is required"; missing.push("Expiry Date"); }
+    }
 
     setErrors(newErrors);
 
@@ -385,12 +399,9 @@ const AddProduct = ({ editId = null, onClose = null, onSave = () => { } }) => {
 
     setIsSubmitting(true);
 
-
     const selectedCategoryObj = cat.find(
       (c) => c.id === selectedCategory
     );
-
-
 
     const payload = {
       productName,
@@ -403,7 +414,8 @@ const AddProduct = ({ editId = null, onClose = null, onSave = () => { } }) => {
       price: parseFloat(price),
       cost: parseFloat(cost) || 0,
       taxAmount: parseFloat(taxAmount) || 0,
-      quantityAlert: 0,
+      quantityAlert: parseInt(quantityAlert, 10) || 0,
+      expiryPeriodMonths: hasExpiry ? (parseInt(expiryPeriodMonths, 10) || null) : null,
       warranty: selectedWarranty,
       manufacturer,
       preferenceSupply,
@@ -412,9 +424,6 @@ const AddProduct = ({ editId = null, onClose = null, onSave = () => { } }) => {
     };
 
     try {
-      // Logic to auto-select warehouse since field is hidden
-      // If selectedWarehouse is set (e.g. edit mode), use it.
-      // Otherwise try the first warehouse in the list.
       const warehouseIdToUse = selectedWarehouse || (warehouse.length > 0 ? warehouse[0].id : "");
 
       if (!warehouseIdToUse) {
@@ -465,6 +474,8 @@ const AddProduct = ({ editId = null, onClose = null, onSave = () => { } }) => {
     setPrice("");
     setCost("");
     setTaxAmount("");
+    setQuantityAlert("");
+    setExpiryPeriodMonths("");
     setSelectedWarranty(null);
     setManufacturer("");
     setPreferenceSupply("");
@@ -712,7 +723,20 @@ const AddProduct = ({ editId = null, onClose = null, onSave = () => { } }) => {
                           />
                           {errors.taxAmount && <div className="text-danger fs-12">{errors.taxAmount}</div>}
                         </div>
-                        {/* Quantity Alert Field Removed */}
+                        <div className="col-lg-4 col-md-6 col-12 mb-3">
+                          <label className="form-label">
+                            Low Stock Threshold <span className="text-danger">*</span>
+                          </label>
+                          <input
+                            type="number"
+                            className={`form-control ${errors.quantityAlert ? "is-invalid" : ""}`}
+                            value={quantityAlert}
+                            onChange={(e) => setQuantityAlert(e.target.value)}
+                            min="0"
+                            placeholder="Enter low stock threshold"
+                          />
+                          {errors.quantityAlert && <div className="text-danger fs-12">{errors.quantityAlert}</div>}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -798,6 +822,10 @@ const AddProduct = ({ editId = null, onClose = null, onSave = () => { } }) => {
                               onChange={(date) => {
                                 if (date && date.target) return;
                                 setDate1(date);
+                                if (hasExpiry && expiryPeriodMonths && date) {
+                                  const computed = calculateExpiryDate(date, expiryPeriodMonths);
+                                  if (computed) setDate2(computed);
+                                }
                               }}
                               className="w-100"
                             />
@@ -837,23 +865,47 @@ const AddProduct = ({ editId = null, onClose = null, onSave = () => { } }) => {
                           </div>
                         </div>
                         {hasExpiry && (
-                          <div className="col-lg-6 col-12 mb-3">
-                            <label className="form-label">
-                              Expiry On <span className="text-danger">*</span>
-                            </label>
-                            <div className="input-groupicon calender-input">
-                              <i className="feather icon-calendar info-img" />
-                              <CommonDatePicker
-                                value={date2}
-                                onChange={(date) => {
-                                  if (date && date.target) return;
-                                  setDate2(date);
+                          <>
+                            <div className="col-lg-6 col-12 mb-3">
+                              <label className="form-label">
+                                Expiry Period (in Months) <span className="text-danger">*</span>
+                              </label>
+                              <input
+                                type="number"
+                                className={`form-control ${errors.expiryPeriodMonths ? "is-invalid" : ""}`}
+                                value={expiryPeriodMonths}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setExpiryPeriodMonths(val);
+                                  if (date1 && val && parseInt(val, 10) > 0) {
+                                    const computed = calculateExpiryDate(date1, val);
+                                    if (computed) setDate2(computed);
+                                  }
                                 }}
-                                className={`w-100 ${errors.expiryDate ? "is-invalid" : ""}`}
+                                min="1"
+                                placeholder="Enter expiry period in months (e.g. 6, 12, 24)"
                               />
+                              {errors.expiryPeriodMonths && <div className="text-danger fs-12">{errors.expiryPeriodMonths}</div>}
                             </div>
-                            {errors.expiryDate && <div className="text-danger fs-12">{errors.expiryDate}</div>}
-                          </div>
+                            <div className="col-lg-6 col-12 mb-3">
+                              <label className="form-label">
+                                Calculated Expiry Date <span className="text-danger">*</span>
+                              </label>
+                              <div className="input-groupicon calender-input">
+                                <i className="feather icon-calendar info-img" />
+                                <CommonDatePicker
+                                  value={date2}
+                                  onChange={(date) => {
+                                    if (date && date.target) return;
+                                    setDate2(date);
+                                  }}
+                                  className={`w-100 ${errors.expiryDate ? "is-invalid" : ""}`}
+                                />
+                              </div>
+                              {errors.expiryDate && <div className="text-danger fs-12">{errors.expiryDate}</div>}
+                            </div>
+                          </>
+                        )}
                         )}
                       </div>
                     </div>

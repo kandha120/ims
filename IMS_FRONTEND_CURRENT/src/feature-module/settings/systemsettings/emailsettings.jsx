@@ -1,9 +1,38 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import SettingsSideBar from "../settingssidebar";
 import CollapesIcon from "../../../components/tooltip-content/collapes";
 import RefreshIcon from "../../../components/tooltip-content/refresh";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import baseapi from "../../../env/baseapi";
 
 const EmailSettings = () => {
+  const [sendingTest, setSendingTest] = useState(false);
+
+  const handleSendTestEmail = async (e) => {
+    e.preventDefault();
+    setSendingTest(true);
+    try {
+      const response = await fetch(`${baseapi}/api/email/test`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.ok && data.success) {
+        toast.success(data.message || "Test email sent successfully!");
+      } else {
+        toast.error(data.message || "Failed to send test email.");
+      }
+    } catch (err) {
+      console.error("Test email error:", err);
+      toast.error("Error sending test email: " + err.message);
+    } finally {
+      setSendingTest(false);
+    }
+  };
+
   return (
     <div>
       <div className="page-wrapper">
@@ -27,9 +56,14 @@ const EmailSettings = () => {
                 <div className="card flex-fill mb-0">
                   <div className="card-header d-flex align-items-center justify-content-between">
                     <h4>Email Settings</h4>
-                    <Link to="#" className="btn btn-primary">
-                      Send test email
-                    </Link>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={handleSendTestEmail}
+                      disabled={sendingTest}
+                    >
+                      {sendingTest ? "Sending..." : "Send test email"}
+                    </button>
                   </div>
                   <div className="card-body pb-0">
                     <div className="row">
@@ -375,6 +409,7 @@ const EmailSettings = () => {
         </div>
       </div>
       {/* /Test Mail */}
+      <ToastContainer />
     </div>
   );
 };

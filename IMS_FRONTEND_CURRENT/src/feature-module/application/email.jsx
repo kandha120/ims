@@ -16,10 +16,58 @@ import {
   emailbg02,
   googleMap } from
 "../../utils/imagepath";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import baseapi from "../../env/baseapi";
+
 const Email = () => {
   const routes = all_routes;
   const [value, setValue] = useState(["Angela Thomas"]);
   const [show, setShow] = useState(false);
+
+  const [emailTo, setEmailTo] = useState("");
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailBody, setEmailBody] = useState("");
+  const [sendingEmail, setSendingEmail] = useState(false);
+
+  const handleSendEmail = async (e) => {
+    e.preventDefault();
+    if (!emailTo.trim()) {
+      toast.error("Please enter recipient email (To).");
+      return;
+    }
+
+    setSendingEmail(true);
+    try {
+      const response = await fetch(`${baseapi}/api/email/send`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          to: emailTo.trim(),
+          subject: emailSubject || "Notification from IMS",
+          body: emailBody || "",
+          isHtml: true,
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (response.ok && data.success) {
+        toast.success(data.message || "Email sent successfully!");
+        setShow(false);
+        setEmailTo("");
+        setEmailSubject("");
+        setEmailBody("");
+      } else {
+        toast.error(data.message || "Failed to send email.");
+      }
+    } catch (err) {
+      console.error("Send email error:", err);
+      toast.error("Error sending email: " + err.message);
+    } finally {
+      setSendingEmail(false);
+    }
+  };
 
   const [showMenu, setShowMenu] = useState(false);
   const [showMenu2, setShowMenu2] = useState(false);
@@ -1670,32 +1718,18 @@ const Email = () => {
               </button>
             </div>
           </div>
-          <form>
+          <form onSubmit={handleSendEmail}>
             <div className="p-3 position-relative pb-2 border-bottom chip-with-image">
               <div className="tag-with-img d-flex align-items-center">
                 <label className="form-label me-2">To</label>
-                {/* <input
-                  className="input-tags form-control border-0 h-100"
-                  id="inputBox"
-                  type="text"
-                  data-role="tagsinput"
-                  name="Label"
-                  defaultValue="Angela Thomas"
-                  /> */}
-                <Chips
-                  value={value}
-                  className="input-tags form-control border-0 h-100 w-100"
-                  onChange={(e) => setValue(e.value)}
-                  itemTemplate={customChip} />
-                
-              </div>
-              <div className="d-flex align-items-center email-cc">
-                <Link to="#" className="d-inline-flex me-2">
-                  Cc
-                </Link>
-                <Link to="#" className="d-inline-flex">
-                  Bcc
-                </Link>
+                <input
+                  type="email"
+                  className="form-control border-0 h-100 w-100"
+                  placeholder="Enter recipient email address"
+                  value={emailTo}
+                  onChange={(e) => setEmailTo(e.target.value)}
+                  required
+                />
               </div>
             </div>
             <div className="p-3 border-bottom">
@@ -1703,16 +1737,19 @@ const Email = () => {
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="Subject" />
-                
+                  placeholder="Subject"
+                  value={emailSubject}
+                  onChange={(e) => setEmailSubject(e.target.value)}
+                />
               </div>
               <div className="mb-0">
                 <textarea
                   rows={7}
                   className="form-control"
                   placeholder="Compose Email"
-                  defaultValue={""} />
-                
+                  value={emailBody}
+                  onChange={(e) => setEmailBody(e.target.value)}
+                />
               </div>
             </div>
             <div className="p-3 d-flex align-items-center justify-content-between">
@@ -1723,28 +1760,24 @@ const Email = () => {
                 <Link to="#" className="btn btn-icon btn-sm rounded-circle">
                   <i className="ti ti-photo" />
                 </Link>
-                <Link to="#" className="btn btn-icon btn-sm rounded-circle">
-                  <i className="ti ti-link" />
-                </Link>
-                <Link to="#" className="btn btn-icon btn-sm rounded-circle">
-                  <i className="ti ti-pencil" />
-                </Link>
-                <Link to="#" className="btn btn-icon btn-sm rounded-circle">
-                  <i className="ti ti-mood-smile" />
-                </Link>
               </div>
               <div className="d-flex align-items-center compose-footer">
-                <Link to="#" className="btn btn-icon btn-sm rounded-circle">
-                  <i className="ti ti-calendar-repeat" />
-                </Link>
-                <Link to="#" className="btn btn-icon btn-sm rounded-circle">
-                  <i className="ti ti-trash" />
-                </Link>
                 <button
                   type="button"
+                  className="btn btn-icon btn-sm rounded-circle"
+                  onClick={() => {
+                    setEmailTo("");
+                    setEmailSubject("");
+                    setEmailBody("");
+                  }}
+                >
+                  <i className="ti ti-trash" />
+                </button>
+                <button
+                  type="submit"
+                  disabled={sendingEmail}
                   className="btn btn-primary d-inline-flex align-items-center ms-2">
-                  
-                  Send <i className="ti ti-arrow-right ms-2" />
+                  {sendingEmail ? "Sending..." : "Send"} <i className="ti ti-arrow-right ms-2" />
                 </button>
               </div>
             </div>

@@ -93,7 +93,6 @@ export const SidebarData = [
     submenuHdr: "User Creation",
     submenuItems: [
       { label: "User Creation", link: "/user-creation", icon: "user-plus", submenu: false },
-      { label: "User List", link: "/users", icon: "users", submenu: false },
     ],
   },
   // {

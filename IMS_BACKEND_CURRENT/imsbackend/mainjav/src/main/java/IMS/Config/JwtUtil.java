@@ -18,8 +18,8 @@ public class JwtUtil {
 
     private Key key;
 
-    private final long ACCESS_EXPIRATION = 1000 * 60 * 60; // 1 hour
-    private final long REFRESH_EXPIRATION = 1000 * 60 * 60 * 24 * 7; // 7 days
+    private final long ACCESS_EXPIRATION = 30L * 24 * 60 * 60 * 1000; // 30 days
+    private final long REFRESH_EXPIRATION = 30L * 24 * 60 * 60 * 1000; // 30 days
 
     @PostConstruct
     public void init() {

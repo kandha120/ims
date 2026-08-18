@@ -64,5 +64,9 @@ public class Product {
         private String preferenceSupply;
 
         private LocalDate manufacturedDate;
+        
+        @Column(name = "expiry_period_months")
+        private Integer expiryPeriodMonths;
+
         private LocalDate expiryOn;
 }
