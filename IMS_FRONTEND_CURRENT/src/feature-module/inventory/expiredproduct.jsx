@@ -96,20 +96,40 @@ const ExpiredProduct = () => {
     setSearchQuery(value);
     setCurrentPage(1);
   };
-  const handleRemoveExpired= (product) => {
+  const handleRemoveExpired = async (product) => {
   const confirmed = window.confirm(
     `Are you sure you want to remove "${product.productName}" from expired stock?`
   );
 
   if (!confirmed) return;
 
-  setAllProducts((prev) =>
-    prev.filter((item) => item.id !== product.id)
-  );
+  try {
+    const response = await fetch(
+      `${baseapi}/api/products/${product.id}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      }
+    );
 
-  toast.success(`${product.productName} removed from expired stock`);
-  };
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "Failed to remove product");
+    }
 
+    setAllProducts((prev) =>
+      prev.filter((item) => item.id !== product.id)
+    );
+
+    toast.success(`${product.productName} removed successfully`);
+  } catch (error) {
+    console.error("Remove expired product error:", error);
+    toast.error(`Failed to remove ${product.productName}`);
+  }
+};
   // -----------------------------------------------------------------
   // TABLE COLUMNS
   // -----------------------------------------------------------------
