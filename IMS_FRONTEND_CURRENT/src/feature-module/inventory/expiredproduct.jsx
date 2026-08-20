@@ -96,6 +96,19 @@ const ExpiredProduct = () => {
     setSearchQuery(value);
     setCurrentPage(1);
   };
+  const handleRemoveExpired= (product) => {
+  const confirmed = window.confirm(
+    `Are you sure you want to remove "${product.productName}" from expired stock?`
+  );
+
+  if (!confirmed) return;
+
+  setAllProducts((prev) =>
+    prev.filter((item) => item.id !== product.id)
+  );
+
+  toast.success(`${product.productName} removed from expired stock`);
+  };
 
   // -----------------------------------------------------------------
   // TABLE COLUMNS
@@ -126,8 +139,22 @@ const ExpiredProduct = () => {
       field: "price",
       body: (row) => <span>₹ {row.price.toFixed(2)}</span>,
     },
+    {
+      header: "Action",
+      field: "action",
+      body: (row) => (
+      <button
+       type="button"
+       className="btn btn-sm btn-danger"
+       onClick={() => handleRemoveExpired(row)}
+       >
+      <i className="ti ti-trash me-1"></i>
+      Remove
+      </button> 
+      ),
+    },
   ];
-
+  
   return (
     <>
       <div className="page-wrapper">

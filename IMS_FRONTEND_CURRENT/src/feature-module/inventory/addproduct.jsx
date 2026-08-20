@@ -906,7 +906,6 @@ const AddProduct = ({ editId = null, onClose = null, onSave = () => { } }) => {
                             </div>
                           </>
                         )}
-                        )}
                       </div>
                     </div>
                   </div>
