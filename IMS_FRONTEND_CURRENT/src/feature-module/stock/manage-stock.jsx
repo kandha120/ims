@@ -11,7 +11,7 @@ import { openModal, closeModal } from "../../utils/modal-cleanup";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-const API_BASE_URL = "http://localhost:8200/api";
+const API_BASE_URL = "/api";
 const STOCK_API = `${API_BASE_URL}/stock`;
 const WAREHOUSES_API = `${API_BASE_URL}/warehouses`;
 

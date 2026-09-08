@@ -14,7 +14,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { FiDownload, FiEdit, FiTrash2 } from "react-icons/fi";
 
-const API_BASE = baseapi ? `${baseapi}/api` : "http://localhost:8200/api";
+const API_BASE = `${baseapi}/api`;
 
 const PurchasesList = () => {
   const [listData, setListData] = useState([]);

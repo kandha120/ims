@@ -1,37 +1,74 @@
-version: '3.8'
 services:
+
   db:
     image: mysql:8.0
+    container_name: ims-db
+    restart: unless-stopped
+
     environment:
-      MYSQL_ROOT_PASSWORD: kandha
-      MYSQL_DATABASE: imsjava
-    ports:
-      - "3306:3306"
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+
     volumes:
-      - db_data:/var/lib/mysql
+      - ims_mysql_data:/var/lib/mysql
+
+    networks:
+      - ims-network
+
 
   backend:
     build:
       context: ./IMS_BACKEND_CURRENT/imsbackend/mainjav
       dockerfile: Dockerfile
+
     ports:
       - "8200:8200"
+
+    container_name: ims-backend
+    restart: unless-stopped
+
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/imsjava?createDatabaseIfNotExist=true
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: kandha
-      JWT_SECRET: mysupersecretPREMkeymysupersecretkey123456
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE}?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+
+      JWT_SECRET: ${JWT_SECRET}
+
+      SPRING_MAIL_HOST: ${MAIL_HOST}
+      SPRING_MAIL_PORT: ${MAIL_PORT}
+      SPRING_MAIL_USERNAME: ${MAIL_USERNAME}
+      SPRING_MAIL_PASSWORD: ${MAIL_PASSWORD}
+
     depends_on:
       - db
+
+    networks:
+      - ims-network
+
 
   frontend:
     build:
       context: ./IMS_FRONTEND_CURRENT
       dockerfile: Dockerfile
+
+    container_name: ims-frontend
+    restart: unless-stopped
+
     ports:
-      - "3000:80"
-    environment:
-      VITE_API_BASE: http://localhost:8200
+      - "80:80"
+
+    depends_on:
+      - backend
+
+    networks:
+      - ims-network
+
+
+networks:
+  ims-network:
+
 
 volumes:
-  db_data:
+  ims_mysql_data:

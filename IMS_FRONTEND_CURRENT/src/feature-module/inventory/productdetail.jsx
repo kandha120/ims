@@ -12,7 +12,7 @@ const ProductDetail = () => {
         console.log("ProductDetail mounted. Slug:", slug);
         const fetchProduct = async () => {
             try {
-                const response = await fetch(`${baseapi || "http://localhost:8200"}/api/products/${slug}`, {
+                const response = await fetch(`${baseapi}/api/products/${slug}`, {
                     credentials: 'include'
                 });
                 if (response.ok) {

@@ -9,7 +9,7 @@ import CommonFooter from "../../components/footer/commonFooter";
 import { toast } from "react-toastify";
 
 // API roots
-const API_ROOT = "http://localhost:8200/api";
+const API_ROOT = "/api";
 const STOCK_API = `${API_ROOT}/adjustment`;
 const WAREHOUSE_API = `${API_ROOT}/warehouses`;
 const PRODUCT_BY_WAREHOUSE_API = `${API_ROOT}/stock/by-warehouse`; // Fetches from AddStock table

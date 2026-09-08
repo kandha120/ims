@@ -10,7 +10,7 @@ const AdminLogin = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     // Call backend login
-    fetch("http://localhost:8200/auth/login", {
+    fetch("/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -22,7 +22,7 @@ const AdminLogin = () => {
       })
       .then(async () => {
         // fetch current user
-        const meRes = await fetch("http://localhost:8200/auth/me", { credentials: "include" });
+        const meRes = await fetch("/auth/me", { credentials: "include" });
         if (!meRes.ok) throw new Error("Failed to fetch user");
         const data = await meRes.json();
         localStorage.setItem("ims_user", JSON.stringify({ email: data.email, role: data.role }));
