@@ -13,7 +13,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo 'Checking out code...'
-                git branch: 'feature'
+                git branch: 'feature',
                     url: 'https://github.com/kandha120/ims.git'
             }
         }
