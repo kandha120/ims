@@ -14,7 +14,7 @@ pipeline {
             steps {
                 echo 'Checking out code...'
                 git branch 'feature'
-                git url 'https://github.com/kandha120/ims.git'
+                    url 'https://github.com/kandha120/ims.git'
             }
         }
         stage('Build Backend') {
