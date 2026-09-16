@@ -6,6 +6,7 @@ services:
     restart: unless-stopped
 
     environment:
+      MYSQL_URL: ${MYSQL_URL}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
@@ -30,7 +31,7 @@ services:
     restart: unless-stopped
 
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE}?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_URL: ${MYSQL_URL}
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
 
