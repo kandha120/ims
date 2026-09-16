@@ -30,6 +30,7 @@ pipeline {
         }
         stage('Build Frontend') {
             steps {
+                nodejs('NodeJS-18') {
                 echo 'Building frontend...'
                 sh '''
                     set -e
@@ -37,6 +38,7 @@ pipeline {
                     npm ci && npm run lint
                     npm run build
                 '''
+                }
             }
         }
         stage('Docker Build Images') {
