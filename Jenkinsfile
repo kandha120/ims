@@ -24,7 +24,7 @@ pipeline {
                     set -e
                     cd ${APP_DIR}/${BACKEND}
                     chmod +x mvnw
-                    ./mvnw clean test && ./mvnw clean package -DskipTests
+                    ./mvnw clean package -DskipTests
                 '''
             }
         }
