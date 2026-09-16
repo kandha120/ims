@@ -90,6 +90,7 @@
     "slick-carousel": "^1.8.1",
     "swiper": "^11.2.10",
     "tailwindcss": "^4.1.16",
+    "typescript-eslint": "^8.0.0"
     "vite": "^6.3.6",
     "yet-another-react-lightbox": "^3.25.0"
   }
